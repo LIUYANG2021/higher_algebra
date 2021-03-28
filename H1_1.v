@@ -35,7 +35,8 @@ Axiom AxiomI : Ɐ (A: Type) (X Y: (Ensemble A)),
   X = Y <-> (Ɐ z : A, z ∈ X <-> z ∈ Y).
 
 (* 4.定义子集：x是y的子集 <-> (Ɐz: z∈x -> z∈y) *)
-Definition Included (A: Type)(X Y: Ensemble A) : Prop := forall z, z ∈ X -> z ∈ Y.
+Definition Included(A: Type)(X Y: Ensemble A) : Prop := 
+  forall z, z ∈ X -> z ∈ Y.
 Notation "X ⊂ Y" := (Included X Y)(at level 70).
 
 (* 5.分类符号{...:...} ： {所有……的集使得……} *)
@@ -47,18 +48,18 @@ Axiom AxiomII : Ɐ(A : Type)(x: A) (P: A -> Prop),
  x ∈ \{ P \} <-> (P x).
 
 (* 7.定义并集  x∪y = {z:z∈x或者z∈y} *)
-Definition Union(A: Type)(x y: (Ensemble A)) : (Ensemble A) :=
-  \{ λ z, z ∈ x \/ z ∈ y \}.
-Notation "x ∪ y" := (Union x y) (at level 65, right associativity).
+Definition Union(A: Type)(X Y: (Ensemble A)) : (Ensemble A) :=
+  \{ λ z, z ∈ X \/ z ∈ Y \}.
+Notation "X ∪ Y" := (Union X Y) (at level 65, right associativity).
 
 (* 8.定义交集  x∩y = {z:z∈x同时z∈y} *)
-Definition Intersection(A: Type)(x y: (Ensemble A)) : (Ensemble A) :=
-  \{ λ z, z ∈ x /\ z ∈ y \}.
-Notation "x ∩ y" := (Intersection x y) (at level 60, right associativity).
+Definition Intersection(A: Type)(X Y: (Ensemble A)) : (Ensemble A) :=
+  \{ λ z, z ∈ X /\ z ∈ Y \}.
+Notation "X ∩ Y" := (Intersection X Y) (at level 60, right associativity).
 
 (* 补充定义  x≠y <-> ~(x=y) *)
 Definition Inequality(A: Type) (x y: A) : Prop := ~ (x = y).
-Notation "x ≠ y" := (Inequality x y) (at level 70).
+Notation "X ≠ Y" := (Inequality X Y) (at level 70).
 
 (* 9.定义空集  Φ={x:x≠x} *)
 Definition Φ (A: Type) := \{ λ x: A, x ≠ x \}.
@@ -67,15 +68,15 @@ Definition Φ (A: Type) := \{ λ x: A, x ≠ x \}.
 Definition NotIn(A: Type)(x: A)(y: Ensemble A): Prop := ~ x ∈ y.
 Notation "x ∉ y" := (NotIn x y) (at level 10).
 
-Definition Complement(A: Type)(x: Ensemble A): Ensemble A := \{ λ y: A, y ∉ x \}.
-Notation "¬ x" := (Complement x) (at level 5, right associativity).
+Definition Complement(A: Type)(X: Ensemble A): Ensemble A := \{ λ y: A, y ∉ X \}.
+Notation "¬ X" := (Complement X) (at level 5, right associativity).
 
 Definition Singleton (A: Type)(x: A): (Ensemble A) := \{ λ z, z = x \}.
 Notation "[ x ]" := (Singleton x) (at level 0, right associativity).
 
 
 (* 10.定义差集  x~y=x∩(¬ y) *)
-Definition Setminus(A: Type)(x y: Ensemble A): Ensemble A := x ∩ (¬ y).
+Definition Setminus(A: Type)(X Y: Ensemble A): (Ensemble A) := X ∩ (¬ Y).
 Notation "x ~ y" := (Setminus x y) (at level 50, left associativity).
 
 (* 补充定义全域 U={x:x=x} *)

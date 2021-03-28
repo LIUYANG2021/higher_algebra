@@ -51,7 +51,6 @@ Proof.
     apply -> AxiomII_P in H1; simpl in H1.
     rewrite H0; rewrite H1; auto.
   - simpl sum.
-
 Admitted.
 
 Lemma Lemma2_3_3 : forall(f : Ensemble(prod nat R)),
@@ -243,7 +242,7 @@ Theorem Theorem2_3_1' : forall (f g d1 d2: Ensemble(prod nat R))(c:R),
 Proof.
   intros. destruct H, H0, H, H0, H, H3, H0, H4.
   Admitted.
-  
+
 
 
 Lemma Lemma2_3_2 : forall(f : Ensemble(prod nat R)),
@@ -258,9 +257,14 @@ Proof.
   intros. red.
   Admitted.
 
+Lemma Lemma2_3_2'' : forall(d x0 a x1 : Ensemble(prod nat R)),
+  (Poly_Mult d x0 = Poly_Mult a x1) ->
+  exists h, d = Poly_Mult a h.
+Proof.
+Admitted.
 
 (* 定理2.3.2 *) 
-Theorem Theorem3_3_2 : forall(f g d: Ensemble(prod nat R)),
+Theorem Theorem2_3_2 : forall(f g d: Ensemble(prod nat R)),
   forall n m : nat, Polynomial_Degree f n -> Polynomial_Degree g m ->
   GCD f g d -> exists u v, Poly_Add(Poly_Mult f u)(Poly_Mult g v) = d.
 Proof.
@@ -294,7 +298,7 @@ Proof.
           double H11. apply H7 in H11. rewrite <- H11.
           apply x_fx; auto. }
       rewrite H7 in H3. rewrite -> Poly_add_0 in H3.
-      apply Lemma2_3_2' in H3. 
+      apply Lemma2_3_2' in H3.
       apply Theorem2_3_1' with(d1:=d)(c:=1) in H3; auto.
       assert(a_mult g 1 = g).
       { apply AxiomI; split; intros; destruct z.
@@ -383,13 +387,12 @@ Proof.
         intros. red. split; red in H2. tauto.
         split; destruct H11; red in H11. tauto.
         destruct H10, H13, H14. destruct H12, H15, H16.
-        rewrite H14 in H16. admit.
-Admitted.
+        rewrite H14 in H16. apply Lemma2_3_2'' with(x0:=x0)(x1:=x1); auto.
+Qed.
 
 (* 定义：多项式互素 *)
 Definition Prime (f g : Ensemble(prod nat R)) := 
   GCD f g \{\ λ u v, u = 0%nat /\ v = 1 \/ u <> 0%nat /\ v = 0 \}\.
-
 
 
 (* 定理2.3.3 *)
@@ -416,3 +419,8 @@ Proof.
       split. admit. split; auto.
       exists (Poly_Add (Poly_Mult x x1) (Poly_Mult x0 x2)). auto.
 Admitted.
+
+
+
+End Section2_3.
+Export Section2_3.

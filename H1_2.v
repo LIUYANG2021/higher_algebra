@@ -10,11 +10,11 @@ Proof. intros; split; auto. Qed.
 
 Ltac double H := apply Lemma_x in H; destruct H.
 
-Definition Relation(A B: Type) f (X: Ensemble A)(Y: Ensemble B) := f ⊂ X × Y.
+Definition Relation(A B: Type) X Y (f: Ensemble (prod A B)) := f ⊂ X × Y.
 
 (* 1.定义映射 *)
-Definition mapping(A B: Type)(X: Ensemble A)(Y: Ensemble B) f :=
-  Relation f X Y /\ (forall x, x ∈ X -> exists y, [x,y] ∈ f) /\
+Definition mapping(A B: Type)X Y(f: Ensemble (prod A B)) :=
+  Relation X Y f /\ (forall x, x ∈ X -> exists y, [x,y] ∈ f) /\
   (forall x y z, [x, y] ∈ f /\ [x, z] ∈ f -> y = z).
 (* 定义定义域 *)
 Definition Domain(X Y : Type) (f : Ensemble(prod X Y)) :=
@@ -57,7 +57,7 @@ Definition Function (A B : Type) (f : Ensemble (prod A B)) : Prop :=
 
 (* 定义：值域 *)
 Definition Range (X Y : Type) (f : Ensemble (prod X Y)) :=
-  \{ λ y, ∃ x, [x, y] ∈ f \}.
+  \{ λ y, exists x, [x, y] ∈ f \}.
 Notation "ran[ f ]" := (Range f) (at level 5).
 
 Theorem f_x' : forall (X Y : Type) (f : Ensemble (prod X Y)) (x : X)(y : Y) ,
@@ -66,7 +66,7 @@ Proof.
   intros X Y f x y H1 H2. unfold image. 
   assert (H3 : \{ λ y0 : Y, [x, y0] ∈ f \} = [y]). 
   { apply AxiomI. intro z. split; intro H3.
-    + apply -> AxiomII in H3. simpl in H3. apply  AxiomII.
+    + apply -> AxiomII in H3. simpl in H3. apply AxiomII.
       apply H1 with (x := x);auto.
     + apply AxiomII. apply -> AxiomII in H3. simpl in H3.
       rewrite H3. auto. }
@@ -98,6 +98,8 @@ Axiom AxiomII_P : Ɐ(A B: Type)(a: A)(b: B)(P: A -> B -> Prop),
 
 Axiom Property_P : Ɐ(A B: Type)(P: A -> B -> Prop)(z: prod A B),
   z ∈ \{\ P \}\ -> (∃(a: A)(b: B), z=[a,b]) /\ z ∈ \{\ P \}\.
+  
+Check or_introl.
 
 Ltac PP H a b := 
   apply Property_P in H; destruct H as [[a [b H]]]; rewrite H in *.
@@ -111,11 +113,7 @@ Notation "g ◦ f" := (Composition g f)(at level 50, no associativity).
 Definition bijective(A B: Type)(X: Ensemble A)(Y: Ensemble B)(f: Ensemble(prod A B)) :=
   surjective X Y f /\ injective X Y f.
 
-
 (* 定义恒等映射 *)
-(* Definition identity_mapping(A: Type)(X: Ensemble A)(j: Ensemble(prod A A)) :=
-  mapping X X j /\ (forall x, x ∈ X -> j [ x ] = x). *)
-
 Definition identity_mapping(A: Type)(X: Ensemble A) :=
   \{\ λ x y, x ∈ X /\ y ∈ X /\ x = y\}\.
 Notation "id[ X ] " := (identity_mapping X)(at level 5).
@@ -145,7 +143,7 @@ Proof.
 Qed.
 
 Lemma Lemma1_2_1''' : forall(A B: Type)(X : Ensemble A)(Y : Ensemble B) f,
-  mapping X Y f -> Relation f ﹣¹ Y X .
+  mapping X Y f -> Relation Y X f ﹣¹.
 Proof.
   intros. red in H. destruct H. red in H.
   red. red. intros. unfold Inverse in H1. PP H1 a b. apply -> AxiomII_P in H2.
@@ -204,7 +202,7 @@ Proof.
   intros. exists f ﹣¹. split; intros.
   - generalize H0; intros. unfold bijective in H0; destruct H0.
     unfold surjective in H0; unfold injective in H2; destruct H0,H2.
-     generalize H1; intros. apply Lemma1_2_1'' in H5. 
+    generalize H1; intros. apply Lemma1_2_1'' in H5. 
     destruct H5, H5. split; auto. clear H6 H7. split. 
     + unfold Composition. apply AxiomI; split; intros.
       * destruct z. apply -> AxiomII_P in H6; simpl in H6.
@@ -236,7 +234,7 @@ Proof.
       apply -> AxiomII_P in H4. simpl in H4. destruct H4. 
       apply -> AxiomII_P in H5; simpl in H5. auto.
     + intros. generalize (classic (f[x1] = f[x2])). intros. destruct H6; auto.
-      assert ([x1, f[x1]] ∈ f /\ [x2, f[x2]] ∈ f ). 
+      assert ([x1, f[x1]] ∈ f /\ [x2, f[x2]] ∈ f ).
       split; eapply Property_Value; eauto. destruct H7. rewrite H6 in H7.
       assert ([f[x2], x1] ∈ f ﹣¹ /\ [f[x2], x2] ∈ f ﹣¹). { split; 
       apply AxiomII_P; auto. } apply H0 in H9. contradiction.

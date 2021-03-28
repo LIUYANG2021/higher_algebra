@@ -22,7 +22,7 @@ Axiom MiniMember : forall (X: Ensemble nat),
 Definition En_S (P: nat -> Prop) := \{ λ x: nat, ~ (P x) \}.
 
 Theorem Mathematical_Induction : forall(P: nat -> Prop)(n: nat),
-  P 0 -> (Ɐ k, P k -> P(S k)) -> (Ɐ n, P n).
+  P 0 -> (forall k, P k -> P(S k)) -> (forall n, P n).
 Proof.
   intros.
   generalize(classic ((En_S P) = Φn)); intros; destruct H1.
@@ -48,7 +48,7 @@ Proof.
 Qed.
 
 Theorem The_Second_Mathematical_Induction : forall (P: nat -> Prop),
-  P 0 -> (Ɐ k, (Ɐ m, m < k -> P m) -> P k) -> (Ɐ n, P n).
+  P 0 -> (forall k, (forall m, m < k -> P m) -> P k) -> (forall n, P n).
 Proof.
   intros.
   generalize(classic ((En_S P) = Φn)); intros; destruct H1.
@@ -58,7 +58,7 @@ Proof.
   - apply MiniMember in H1.
     + destruct H1 as [h [H1 H2]]. double H1.
       apply -> AxiomII in H1; simpl in H1.
-      assert(Ɐ m, m < h -> P m).
+      assert(forall m, m < h -> P m).
       { intros. apply NNPP. intro.
         assert ( m ∉ (En_S P) ).
         { assert(m ≠ 0). { intro. rewrite H6 in H5; contradiction. }

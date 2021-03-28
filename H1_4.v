@@ -5,17 +5,32 @@ Require Export ZArith.
 Module H14.
 Open Scope Z_scope.
 
-Theorem x_fx : forall (X Y : Type) (f : Ensemble(prod X Y))(x : X),
-  Function f-> x ∈ dom[f] -> [x, f[x]] ∈ f.
-Proof.
-  intros X Y f x H0 H1. apply -> AxiomII in H1; simpl in H1.
-  destruct H1 as [y H1].
-  apply f_x' in H1 as H2; auto. rewrite H2; auto.
-Qed.
+
+Definition exa_div a b := exists d, b = a * d.
+(* Notation " a | b " := (exa_div a b). *)
 
 (* 整数的一些整除性质 *)
+Lemma exa_div_trans : forall a b c, exa_div a b -> exa_div b c -> exa_div a c.
+Proof.
+  intros. red. red in H; red in H0. destruct H, H0.
+  rewrite H in H0. exists (x*x0). rewrite H0. ring.
+Qed.
+
+Lemma exa_div_add : forall c a b, exa_div c a -> exa_div c b ->
+  exa_div c (a + b).
+Proof.
+  intros. red. red in H; red in H0. destruct H, H0. exists (x + x0). 
+  rewrite H; rewrite H0. ring.
+Qed.
+
+Lemma exa_div_mult : forall c t a, exa_div c a -> exa_div c (t*a).
+Proof.
+  intros. red in H; red. destruct H. exists (t*x); rewrite H; ring.
+Qed.
 
 Definition Z_POS : Ensemble Z := \{λ n, n > 0 \}.
+
+
 Axiom MiniMember_Z' : Ɐ (X: Ensemble Z),
   X ≠ Φ Z /\ X ⊂ Z_POS -> ∃ a, a ∈ X /\ (Ɐ c, c ∈ X -> a <= c).
 Definition Z_NotNeg : Ensemble Z := \{λ n, n >= 0 \}.
@@ -230,10 +245,7 @@ Definition r (a b : Z) : Z :=
     | 0 => a = 0
     | _ => r a b = 0
   end. *)
-Definition exa_div a b := exists d, b = a * d.
-(* Definition exa_div (a b : Z) := r a b = 0.
-(* Notation " a | b " := (exa_div a b). *) *)
-
+  
 
 (* 定义：最大公约数 *)
 Definition gcd (a b d : Z) := (exa_div d a) /\ (exa_div d b) /\ 
@@ -271,7 +283,7 @@ Proof.
     rewrite H5. apply Z.mul_0_r.
 Qed.
 
-Lemma Lemma1_4_2b : forall (n: nat)  (a t1 t2: Ensemble (prod nat Z)),
+Lemma Lemma1_4_2a : forall (n: nat)  (a t1 t2: Ensemble (prod nat Z)),
   Function a /\ \{λ u, (u <= n)%nat \} ⊂ dom[a] ->
   Function t1 /\ \{λ u, (u <= n)%nat \} ⊂ dom[t1] ->
   Function t2 /\ \{λ u, (u <= n)%nat \} ⊂ dom[t2] -> 
@@ -294,7 +306,7 @@ Proof.
     rewrite H3. rewrite H4. auto.
 Qed.
   
-Lemma Lemma1_4_2a : forall (n i: nat) (a : Ensemble (prod nat Z)) k,
+Lemma Lemma1_4_2b : forall (n i: nat) (a : Ensemble (prod nat Z)) k,
   Function a /\ \{λ u, (u <= n)%nat \} ⊂ dom[a] -> (i <= n)%nat ->
   k * a[i] = sum_a_t a \{\ λ (u:nat) (v:Z), (u <= n)%nat /\ ((u=i /\ v=k) \/ 
             (u≠i /\ v=0)) \}\ n.
@@ -325,7 +337,7 @@ Proof.
       (u = i /\ v = k \/ u ≠ i /\ v = 0) \}\ n = 
       sum_a_t a \{\ λ(u : nat)(v : Z),(u <= S n)%nat /\ 
       (u = i /\ v = k \/ u ≠ i /\ v = 0) \}\ n).
-      { apply Lemma1_4_2b.
+      { apply Lemma1_4_2a.
         - split; auto. red; intros; apply -> AxiomII in H3; simpl in H3;
           apply H1. apply AxiomII. apply Nat.le_le_succ_r in H3; auto.
         - assert (Function \{\ λ(u : nat)(v : Z),(u <= n)%nat /\ 
@@ -516,31 +528,8 @@ Proof.
   apply Z.mul_comm; auto.
 Qed.
 
-Lemma Lemma1_4_2c : forall (n i: nat ) k, 
-  Function \{\ λ (u:nat) (v:Z), (u <= n)%nat /\ 
-  ((u=i /\ v=k) \/  (u≠i /\ v=0)) \}\ .
-Proof.
-  intros. red; intros. apply -> AxiomII_P in H; apply -> AxiomII_P in H0.
-  destruct H, H0. destruct H1, H2, H1, H2.
-  - rewrite H4; auto.
-  - contradiction.
-  - contradiction.
-  - rewrite H4; auto.
-Qed.
 
-Lemma Lemma1_4_2d : forall c a b, exa_div c a -> exa_div c b ->
-  exa_div c (a + b).
-Proof.
-  intros. red. red in H; red in H0. destruct H, H0. exists (x + x0). 
-  rewrite H; rewrite H0. ring.
-Qed.
-
-Lemma Lemma1_4_2e : forall c t a, exa_div c a -> exa_div c (t*a).
-Proof.
-  intros. red in H; red. destruct H. exists (t*x); rewrite H; ring.
-Qed.
-
-Lemma Lemma1_4_2f : forall (n : nat) (a t : Ensemble (prod nat Z)) (c : Z),
+Lemma Lemma1_4_2c : forall (n : nat) (a t : Ensemble (prod nat Z)) (c : Z),
   \{ λ u, (u <= n)%nat \} ⊂ dom[a] -> \{ λ u, (u <= n)%nat \} ⊂ dom[t] ->
   (forall i, (i<=n)%nat -> exa_div c a[i]) ->
   exa_div c (sum_a_t a t n).
@@ -548,7 +537,7 @@ Proof.
   intro n. induction n; intros.
   - red. assert (0 <= 0)%nat. { apply Nat.le_refl. } apply H1 in H2. red in H2.
     destruct H2. exists (t[0%nat]*x). simpl. rewrite H2. ring.
-  - simpl. apply Lemma1_4_2d.
+  - simpl. apply exa_div_add.
     + apply IHn; try red; intros.
       * apply H. apply AxiomII; apply -> AxiomII in H2; simpl in H2.
         apply Nat.le_le_succ_r in H2; auto.
@@ -561,8 +550,7 @@ Proof.
       exists (t[S n] * x); rewrite H2; ring.
 Qed.
 
-(* Lemma Lemma1_4_2g : forall () *)
-Lemma Lemma1_4_2g : forall ( n i : nat) (a t: Ensemble (prod nat Z)) q , 
+Lemma Lemma1_4_2d : forall ( n i : nat) (a t: Ensemble (prod nat Z)) q , 
   \{ λ u, (u <= n)%nat \} ⊂ dom[a] -> \{ λ u, (u <= n)%nat \} ⊂ dom[t] ->
   Function a -> Function t -> (i<=n)%nat->
   a [i] - (sum_a_t a t n ) * q = 
@@ -612,7 +600,7 @@ Proof.
         try apply H; try apply H0; try apply AxiomII; auto. } 
       assert (sum_a_t a t' n = sum_a_t a \{\ λ(u : nat)(v : Z),(u <= n)%nat /\ 
       (u = i /\ v = 1 - q0 * t [i] \/ u ≠ i /\ v = - q0 * t [u]) \}\ n). 
-      { apply Lemma1_4_2b.
+      { apply Lemma1_4_2a.
         - split; auto. red; intros. apply H. apply AxiomII.
           apply -> AxiomII in H8; simpl in H8. auto.
         - split; auto. red; intros. rewrite H4; apply AxiomII. exists
@@ -772,7 +760,7 @@ Proof.
         apply le_lt_n_Sm in H10. rewrite Nat.sub_1_r in H10.
         rewrite Nat.succ_pred_pos in H10; auto. } rewrite H9.
         assert (-a[i] = -1 * a[i]). { ring. } rewrite H10. 
-        apply Lemma1_4_2a.
+        apply Lemma1_4_2b.
         + split; auto. red; intros. apply -> AxiomII in H11; simpl in H11.
           rewrite H1. apply AxiomII. apply le_lt_n_Sm in H11. 
           rewrite Nat.sub_1_r in H11. rewrite Nat.succ_pred_pos in H11; auto.
@@ -825,7 +813,7 @@ Proof.
         apply le_lt_n_Sm in H10. rewrite Nat.sub_1_r in H10.
         rewrite Nat.succ_pred_pos in H10; auto. } rewrite H9.
         assert (a[i] = 1 * a[i]). { ring. } rewrite H10. 
-        apply Lemma1_4_2a.
+        apply Lemma1_4_2b.
         + split; auto. red; intros. apply -> AxiomII in H11; simpl in H11.
           rewrite H1. apply AxiomII. apply le_lt_n_Sm in H11. 
           rewrite Nat.sub_1_r in H11. rewrite Nat.succ_pred_pos in H11; auto.
@@ -848,7 +836,7 @@ Proof.
     apply Z.lt_neq in H7. apply not_eq_sym; auto. } 
     apply H11 in H12. destruct H12 as [q [r H12]]. destruct H12. 
     generalize (classic (r > 0)); intros. destruct H14.
-    * assert (r ∈ I'). { 
+    * assert (r ∈ I'). {
         assert (r = a[i] - d * q). { symmetry in H12.
         apply Z.add_move_l in H12. auto. } rewrite H15. rewrite H4.
         apply AxiomII. split.
@@ -892,7 +880,7 @@ Proof.
                     (u = i /\ v = 1 - q * t [i] \/ u ≠ i /\ v = - q * t [u]) \}\ 
                     = \{\ λ(u : nat)(v : Z),(u <= n-1)%nat /\
                     (u = i /\ v = 1 - q * t [i] \/ u ≠ i /\ v = - q * t [u]) \}\).
-                    { apply AxiomI; split; intros.
+            { apply AxiomI; split; intros.
             - apply Property_P in H20. destruct H20, H20, H20. rewrite H20.
               rewrite H20 in H21. apply AxiomII_P. apply -> AxiomII_P in H21.
               simpl in H21. repeat split; try tauto. destruct H21. 
@@ -902,7 +890,7 @@ Proof.
               simpl in H21. repeat split; try tauto. destruct H21. 
               apply le_lt_n_Sm in H21. rewrite Nat.sub_1_r in H21.
               rewrite Nat.succ_pred_pos in H21; auto. } rewrite H20.
-              apply Lemma1_4_2g; auto; try red; intros; 
+              apply Lemma1_4_2d; auto; try red; intros; 
               try apply -> AxiomII in H21; try simpl in H21; try rewrite H1;
               try apply AxiomII; try auto.
               apply le_lt_n_Sm in H21.
@@ -921,7 +909,7 @@ Proof.
     * destruct H13. Z.swap_greater. apply Znot_lt_ge in H14.
       assert (r = 0). { Z.swap_greater; apply Z.le_antisymm; auto. }
       exists q; rewrite H16 in H12. rewrite Z.add_0_r in H12. auto.
-  + destruct H5, H11. rewrite H12. apply Lemma1_4_2f; red; intros.
+  + destruct H5, H11. rewrite H12. apply Lemma1_4_2c; red; intros.
     * rewrite H1; apply AxiomII; apply -> AxiomII in H13; simpl in H13.
       apply le_lt_n_Sm in H13.
       rewrite Nat.sub_1_r in H13; auto. rewrite Nat.succ_pred_pos in H13; auto.
@@ -1088,7 +1076,7 @@ Proof.
         apply le_lt_n_Sm in H11. rewrite Nat.sub_1_r in H11.
         rewrite Nat.succ_pred_pos in H11; auto. } rewrite H10.
         assert (-a[i] = -1 * a[i]). { ring. } rewrite H11. 
-        apply Lemma1_4_2a.
+        apply Lemma1_4_2b.
         + split; auto. red; intros. apply -> AxiomII in H12; simpl in H12.
           rewrite H1. apply AxiomII. apply le_lt_n_Sm in H12. 
           rewrite Nat.sub_1_r in H12. rewrite Nat.succ_pred_pos in H12; auto.
@@ -1141,7 +1129,7 @@ Proof.
         apply le_lt_n_Sm in H11. rewrite Nat.sub_1_r in H11.
         rewrite Nat.succ_pred_pos in H11; auto. } rewrite H10.
         assert (a[i] = 1 * a[i]). { ring. } rewrite H11. 
-        apply Lemma1_4_2a.
+        apply Lemma1_4_2b.
         + split; auto. red; intros. apply -> AxiomII in H12; simpl in H12.
           rewrite H1. apply AxiomII. apply le_lt_n_Sm in H12. 
           rewrite Nat.sub_1_r in H12. rewrite Nat.succ_pred_pos in H12; auto.
@@ -1216,7 +1204,7 @@ Proof.
               simpl in H22. repeat split; try tauto. destruct H22. 
               apply le_lt_n_Sm in H22. rewrite Nat.sub_1_r in H22.
               rewrite Nat.succ_pred_pos in H22; auto. } 
-              rewrite H21. apply Lemma1_4_2g; auto; try red; intros; 
+              rewrite H21. apply Lemma1_4_2d; auto; try red; intros; 
               try apply -> AxiomII in H22; try simpl in H22; try rewrite H1;
               try apply AxiomII; try auto. 
               apply le_lt_n_Sm in H22.
@@ -1235,7 +1223,7 @@ Proof.
     * destruct H14. Z.swap_greater. apply Znot_lt_ge in H15.
       assert (r = 0). { Z.swap_greater; apply Z.le_antisymm; auto. }
       exists q; rewrite H17 in H13. rewrite Z.add_0_r in H13. auto.
-  + destruct H5, H12. rewrite H13. apply Lemma1_4_2f; red; intros.
+  + destruct H5, H12. rewrite H13. apply Lemma1_4_2c; red; intros.
     * rewrite H1; apply AxiomII; apply -> AxiomII in H14; simpl in H14.
       apply le_lt_n_Sm in H14.
       rewrite Nat.sub_1_r in H14; auto. rewrite Nat.succ_pred_pos in H14; auto.
@@ -1304,8 +1292,8 @@ Proof.
   - generalize (Theorem1_4_3 n 1 a); intros. apply H4 in H0; auto. 
   - destruct H3, H3, H4. red. generalize (Theorem1_4_2 n a); intros.
     assert (∃d : Z,gcd_n a n d). { apply H6. split; auto. } clear H6.
-    destruct H7 as [c H7]. 
-    assert (exa_div c 1). { rewrite <- H5. apply Lemma1_4_2f; 
+    destruct H7 as [c H7].
+    assert (exa_div c 1). { rewrite <- H5. apply Lemma1_4_2c; 
     try red; intros; try apply -> AxiomII in H6; simpl in H6.
     + rewrite H2; apply AxiomII. rewrite Nat.sub_1_r in H6.
       apply le_lt_n_Sm in H6. rewrite Nat.succ_pred_pos in H6; auto.
@@ -1368,7 +1356,7 @@ Qed.
 
 
 (* 定理1.4.5 *)
-Theorem Theorem1_4_5 : forall (p a b : Z) (t : Ensemble (prod nat Z)),
+Theorem Theorem3_5_4 : forall (p a b : Z) (t : Ensemble (prod nat Z)),
   Function t -> dom[t] = \{ λ u, (u<2)%nat \} ->
   (forall d (t' : Ensemble (prod nat Z)), gcd_n t' 2%nat d -> d >= 0) ->
   prime p -> exa_div p (a*b) -> exa_div p a \/ exa_div p b.
@@ -1414,14 +1402,14 @@ Proof.
     destruct H13. rewrite H13 in H12.
     rewrite H14 in H12. rewrite Z.mul_comm in H12.
     pattern (a * x [1%nat]) in H12; rewrite Z.mul_comm in H12.
-    assert (x [0%nat] * p * b + x [1%nat] * a * b = b). 
+    assert (x [0%nat] * p * b + x [1%nat] * a * b = b).
     { generalize (Z.mul_comm (x [0%nat] * p) b); intros. rewrite H15.
       generalize (Z.mul_comm (x [1%nat] * a) b); intros. rewrite H16.
       generalize (Zred_factor4 b (x [0%nat] * p) (x [1%nat] * a)); intros.
       rewrite H17. rewrite H12. ring. }
-    rewrite <- H15. apply Lemma1_4_2d.
+    rewrite <- H15. apply exa_div_add.
     * red. exists (x[0%nat]*b). ring.
-    * rewrite <- Z.mul_assoc. apply Lemma1_4_2e. auto.
+    * rewrite <- Z.mul_assoc. apply exa_div_mult. auto.
   - intros; apply H1 in H12; auto.
 Qed.
 

@@ -24,23 +24,43 @@ Axiom Poly_add_0 : forall (f : Ensemble(prod nat R)),
 
 (* 基本性质 *)
 Lemma Lemma2_2_1 : forall (f g h : Ensemble(prod nat R)),
-  exa_div f g /\ exa_div g h -> exa_div f h.
+  exa_div g f /\ exa_div h g -> exa_div h f.
 Proof.
   intros; destruct H. red in H; destruct H,H1,H2.
   red in H0; destruct H0,H3,H4.
-  rewrite H4 in H2. rewrite Poly_Mult_assoc in H2.
-  red; split; auto. split; auto. exists (Poly_Mult x0 x); auto.
+  rewrite H2 in H4. rewrite Poly_Mult_assoc in H4.
+  red; split; auto. split; auto. exists (Poly_Mult x x0); auto.
 Qed.
 
 
-Lemma Lemma2_2_2 : forall (h f g : Ensemble(prod nat R)),
-  exa_div h f /\ exa_div h g -> exa_div h (Poly_Add f g).
+Lemma Lemma2_2_2 : forall (h f g : Ensemble(prod nat R))(n m : nat),
+  (Polynomial_Degree f n) -> (Polynomial_Degree g m) -> Nat.max n m = n ->
+  exa_div f h /\ exa_div g h -> exa_div (Poly_Add f g) h.
 Proof.
-  intros; destruct H. red in H; destruct H,H1,H2.
-  red in H0; destruct H0,H3,H4.
-  red; split; auto; split.
-  - repeat split.
-Admitted.
+  intros h f g n m H5 H6 H7 H. destruct H. red in H; destruct H,H1,H2.
+  red in H0; destruct H0,H3,H4. red; split.
+  - assert(Function(Poly_Add f g)).
+    { red; intros. apply -> AxiomII_P in H9; simpl in H9.
+      apply -> AxiomII_P in H8; simpl in H8.
+      rewrite H9; rewrite H8; auto. }
+    repeat split; auto.
+    + apply AxiomI; split; intros.
+      * apply AxiomII; auto.
+      * apply AxiomII. exists((Poly_Add f g)[z]).
+        apply AxiomII_P. assert([z,f [z] + g [z]]∈(Poly_Add f g)).
+        { apply AxiomII_P. auto. } apply f_x' in H10; auto.
+    + exists(Nat.max n m). intros. red in H5; red in H6.
+      destruct H5,H6,H10,H11. rewrite H7 in H9. double H9.
+      apply H12 in H9. Search(max). generalize(Nat.le_max_r n m); intros.
+      rewrite H7 in H15. assert(m0>m)%nat. { lia. }
+      apply H13 in H16. assert((Poly_Add f g)[m0] = f[m0]+g[m0]).
+      { apply Poly_Add_b; try tauto. red in H; tauto.
+        red in H6; tauto. apply AxiomII; auto. }
+      rewrite H17; rewrite H9; rewrite H16. ring.
+  - split; auto.
+    exists(Poly_Add x x0). rewrite H2; rewrite H4.
+    rewrite <- Poly_Mult_distr; auto.
+Qed.
 
 Lemma Lemma2_2_5 : forall (f g : Ensemble(prod nat R)),
   Polynomial f -> Polynomial_Degree g 0 -> exa_div f g.
@@ -51,6 +71,20 @@ Proof.
   - apply AxiomII_P. admit. 
   - admit. 
 Admitted.
+
+Lemma Lemma2_2_6 : Polynomial \{\ λ(_ : nat)(v : R),v = 0 \}\.
+Proof.
+  assert(Function \{\ λ(_ : nat)(v : R),v = 0 \}\).
+  { red; intros. apply -> AxiomII_P in H; simpl in H;
+    apply -> AxiomII_P in H0; simpl in H0. rewrite H; rewrite H0; auto. }
+  repeat split; auto.
+  - apply AxiomI; split; intros.
+    apply AxiomII; auto.
+    apply AxiomII. exists(\{\ λ(_ : nat)(v : R),v = 0 \}\[z]).
+    apply AxiomII_P. assert([z,0]∈\{\ λ(_ : nat)(v : R),v = 0 \}\).
+    { apply AxiomII_P. auto. } apply f_x' in H1; auto.
+  - exists 0%nat. intros. apply f_x'; auto. apply AxiomII_P; auto.
+Qed.
 
 (* 定理2.2.1 *)
 Theorem Theorem2_2_1 : forall (f g : Ensemble (prod nat R)),
@@ -71,12 +105,10 @@ Proof.
         assert(Poly_Mult g \{\ λ(u : nat)(v : R),u = 0%nat /\ 
         v = f [0%nat]/g [0%nat] \/ (u > 0)%nat/\v=0 \}\ = f).
         { apply AxiomI; split; intros; destruct z.
-          - apply -> AxiomII_P in H1; simpl in H1. unfold Ck in H1.
-            admit.
-          - apply AxiomII_P.
-        admit. }
+          - apply -> AxiomII_P in H1; simpl in H1. unfold Ck in H1. admit.
+          - admit. }
         rewrite H1. rewrite Poly_add_0; auto.
-      * left. unfold degree_0. split. { admit. } intros.
+      * left. unfold degree_0. split. apply Lemma2_2_6. intros.
         assert([x,0] ∈ \{\ λ(_ : nat)(v : R),v = 0 \}\).
         { apply AxiomII_P; auto. }
         apply f_x' in H2; auto.
@@ -134,20 +166,19 @@ Proof.
         - apply AxiomI; split; intros.
           apply AxiomII; auto.
           apply AxiomII. exists f1[z]. rewrite H3. apply AxiomII_P.
-          assert([z,f [z] + (Poly_neg \{\ λ(u : nat)(v : R),v = Ck h g u \}\) [z]] ∈
-          (Poly_Add f (Poly_neg \{\ λ(u : nat)(v : R),v = Ck h g u \}\))).
+          assert([z,f [z] + (Poly_neg \{\ λ(u : nat)(v : R),v = Ck h g u \}\)
+          [z]]∈(Poly_Add f (Poly_neg \{\ λ(u : nat)(v : R),v = Ck h g u \}\))).
           { apply AxiomII_P; auto. }
           apply f_x' in H6; auto. rewrite <- H3; auto.
         - exists k. intros. assert([m0,0] ∈ f1).
-          { rewrite H3. apply AxiomII_P; simpl.
-
-            admit. }
+          { rewrite H3. apply AxiomII_P; simpl. admit. }
           apply f_x'; auto.
         }
       generalize(classic(degree_0 f1)); intros; destruct H6 as [H20|H20].
       * exists h, \{\ λ(u : nat)(v : R), v = 0 \}\; split.
-        -- rewrite Poly_add_0. red in H20. rewrite H3 in H20. admit.
-        -- split. left. red. split. { admit. } intros. apply f_x'.
+        -- rewrite Poly_add_0. red in H20. rewrite H3 in H20.
+           destruct H20. admit.
+        -- split. left. red. split. apply Lemma2_2_6. intros. apply f_x'.
            red; intros. apply -> AxiomII_P in H7; simpl in H7.
            apply -> AxiomII_P in H8; simpl in H8.
            rewrite H7; rewrite H8; auto.
@@ -195,7 +226,7 @@ Proof.
             { rewrite H2. apply AxiomII_P. right; split; auto. lia. }
             apply f_x'; auto.
         }
-        assert(H30 : ~ degree_0 h). 
+        assert(H30 : ~ degree_0 h).
         { intro. unfold degree_0 in H9.
           assert((k-m)%nat ∈ dom[h]).
           { apply AxiomII. exists h[(k-m)%nat]. rewrite H2.
@@ -212,7 +243,7 @@ Proof.
         destruct H9 as [h1 H9].
         assert(h1 = k - m)%nat.
         { red in H9. destruct H9, H10.
-          rewrite H2 in H10. 
+          rewrite H2 in H10.
           generalize(classic(h1 = k-m)%nat); intros; destruct H13; auto.
           assert([h1, 0] ∈ \{\ λ(u : nat)(v : R),u = (k - m)%nat /\ 
           v = f [k] / g [m] \/ u <> (k - m)%nat /\ v = 0 \}\).
@@ -230,7 +261,7 @@ Proof.
         assert(Function (Poly_Mult h g)).
         { red in H9; destruct H9. red in H9; tauto. }
         assert(n1 < k)%nat.
-        { rewrite H3 in H6.  admit. }
+        { rewrite H3 in H6. admit. }
         apply H with (f:=f1)(m0:=m) in H14; auto.
         destruct H14 as [q [r H14]]. destruct H14.
         assert(f = Poly_Add f1 (Poly_Mult h g)).
@@ -253,7 +284,6 @@ Proof.
         apply -> AxiomII_P in H21; simpl in H21.
         rewrite H19; rewrite H21; auto.
         destruct H15. red in H19. tauto.
-
 Admitted.
 
 
