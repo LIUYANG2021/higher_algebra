@@ -395,32 +395,6 @@ Definition Prime (f g : Ensemble(prod nat R)) :=
   GCD f g \{\ λ u v, u = 0%nat /\ v = 1 \/ u <> 0%nat /\ v = 0 \}\.
 
 
-(* 定理2.3.3 *)
-Theorem Theorem2_3_3 : forall(f g : Ensemble(prod nat R)),
-  forall n m : nat, Polynomial_Degree f n -> Polynomial_Degree g m ->
-  ( Prime f g <-> exists u v, Poly_Add(Poly_Mult f u)(Poly_Mult g v) = 
-  \{\ λ(u : nat)(v : R), (u = 0%nat /\ v = 1 \/ u <> 0%nat /\ v = 0) \}\ ).
-Proof.
-  intros; split; intros.
-  - red in H1. apply Theorem2_3_2 with(n:=n)(m:=m) in H1; auto.
-  - red. red. unfold CD. split. split.
-    + red. split; red in H. tauto.
-      split. admit.
-      exists f. rewrite Poly_Mult_comm.
-      rewrite <- Lemma2_3_3; auto. tauto.
-    + red. split; red in H0. tauto.
-      split. admit.
-      exists g. rewrite Poly_Mult_comm.
-      rewrite <- Lemma2_3_3; auto. tauto.
-    + intros. red. destruct H2, H2, H4, H5, H3, H6, H7.
-      destruct H1, H1. rewrite H5 in H1. rewrite H7 in H1.
-      rewrite Poly_Mult_assoc in H1. rewrite Poly_Mult_assoc in H1.
-      rewrite <- Poly_Mult_distr in H1.
-      split. admit. split; auto.
-      exists (Poly_Add (Poly_Mult x x1) (Poly_Mult x0 x2)). auto.
-Admitted.
-
-
 
 End Section2_3.
 Export Section2_3.
